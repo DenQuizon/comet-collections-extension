@@ -27,11 +27,13 @@ echo "📦 Copying extension files..."
 cp manifest.json ${BUILD_DIR}/
 cp -r background ${BUILD_DIR}/
 cp -r content ${BUILD_DIR}/
-cp -r icons ${BUILD_DIR}/
-cp -r popup ${BUILD_DIR}/ 2>/dev/null || true
-cp -r sidepanel ${BUILD_DIR}/ 2>/dev/null || true
 cp *.png ${BUILD_DIR}/ 2>/dev/null || true
 cp *.html ${BUILD_DIR}/ 2>/dev/null || true
+
+# Copy optional directories if they exist
+[ -d "icons" ] && cp -r icons ${BUILD_DIR}/
+[ -d "popup" ] && cp -r popup ${BUILD_DIR}/
+[ -d "sidepanel" ] && cp -r sidepanel ${BUILD_DIR}/
 
 # Create package
 echo "📦 Creating ZIP package..."

@@ -93,6 +93,7 @@ class CometCollectionsSidebar {
             <option value="light">Light</option>
             <option value="dark">Dark</option>
           </select>
+          <button class="comet-header-btn comet-support-btn" id="comet-support-btn" title="Support Development ☕">☕</button>
           <button class="comet-header-btn comet-header-btn-primary" id="comet-add-collection-btn" title="Add collection">+</button>
           <button class="comet-header-btn" id="comet-refresh-btn" title="Refresh">↻</button>
           <button class="comet-header-btn" id="comet-close-btn" title="Close">✕</button>
@@ -136,7 +137,10 @@ class CometCollectionsSidebar {
                 <div class="comet-current-url">Loading...</div>
               </div>
             </div>
-            <button class="comet-current-add-btn">+ Add to Collection</button>
+            <div class="comet-current-actions">
+              <button class="comet-current-add-btn">+ Add Current Page</button>
+              <button class="comet-add-url-btn">🔗 Add URL</button>
+            </div>
           </div>
         </div>
 
@@ -211,7 +215,9 @@ class CometCollectionsSidebar {
     const addCollectionBtn = this.sidebar.querySelector('#comet-add-collection-btn');
     const refreshBtn = this.sidebar.querySelector('#comet-refresh-btn');
     const closeBtn = this.sidebar.querySelector('#comet-close-btn');
+    const supportBtn = this.sidebar.querySelector('#comet-support-btn');
     const currentAddBtn = this.sidebar.querySelector('.comet-current-add-btn');
+    const addUrlBtn = this.sidebar.querySelector('.comet-add-url-btn');
     const searchInput = this.sidebar.querySelector('#comet-search-input');
     const searchClear = this.sidebar.querySelector('#comet-search-clear');
 
@@ -227,8 +233,16 @@ class CometCollectionsSidebar {
       closeBtn.addEventListener('click', () => this.hideSidebar());
     }
 
+    if (supportBtn) {
+      supportBtn.addEventListener('click', () => this.showSupportDialog());
+    }
+
     if (currentAddBtn) {
       currentAddBtn.addEventListener('click', () => this.showAddPageDialog());
+    }
+
+    if (addUrlBtn) {
+      addUrlBtn.addEventListener('click', () => this.showAddUrlDialog());
     }
 
     // Search functionality
@@ -883,6 +897,244 @@ class CometCollectionsSidebar {
     
     console.log('✅ Page added to collection successfully:', collection.name);
     console.log('Collection now has', collection.pages.length, 'pages');
+  }
+
+  // =============================================
+  // ADD URL DIALOG
+  // =============================================
+  
+  async showAddUrlDialog() {
+    console.log('🔗 Starting showAddUrlDialog...');
+    
+    if (this.collections.length === 0) {
+      const shouldCreate = await this.showCustomDialog({
+        title: 'No Collections',
+        content: 'You need to create a collection first. Would you like to create one now?',
+        buttons: [
+          { id: 'cancel', text: 'Cancel', value: false, class: 'comet-btn-secondary' },
+          { id: 'create', text: 'Create Collection', value: true, class: 'comet-btn-primary' }
+        ]
+      });
+
+      if (shouldCreate) {
+        await this.createNewCollection();
+      }
+      return;
+    }
+
+    // Try to get URL from clipboard
+    let clipboardUrl = '';
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const clipText = await navigator.clipboard.readText();
+        if (this.isValidUrl(clipText)) {
+          clipboardUrl = clipText.trim();
+        }
+      }
+    } catch (error) {
+      console.log('📋 Clipboard access not available:', error.message);
+    }
+
+    const addUrlDialogHTML = `
+      <div class="comet-modal-content" style="max-width: 500px;">
+        <div class="comet-modal-header">
+          <h3>🔗 Add URL to Collection</h3>
+        </div>
+        <div class="comet-modal-body">
+          <div class="comet-form-group">
+            <label class="comet-form-label">URL:</label>
+            <input type="url" class="comet-form-input" id="url-input" placeholder="https://example.com" value="${clipboardUrl}">
+            <div class="comet-form-hint">
+              ${clipboardUrl ? '📋 URL from clipboard detected!' : '💡 Copy a URL to your clipboard, then open this dialog for auto-fill'}
+            </div>
+          </div>
+          
+          <div class="comet-form-group">
+            <label class="comet-form-label">Custom Title (Optional):</label>
+            <input type="text" class="comet-form-input" id="title-input" placeholder="Leave blank to fetch from page">
+            <div class="comet-form-hint">If empty, we'll try to fetch the page title automatically</div>
+          </div>
+
+          <div class="comet-form-group">
+            <label class="comet-form-label">Add to Collection:</label>
+            <select class="comet-form-select" id="collection-select">
+              <option value="">Select a collection...</option>
+              ${this.collections.map(collection => 
+                `<option value="${collection.id}">${collection.name} (${collection.pages?.length || 0} pages)</option>`
+              ).join('')}
+            </select>
+          </div>
+          
+          <div class="comet-url-preview" id="url-preview" style="display: none;">
+            <div class="comet-url-preview-header">Preview:</div>
+            <div class="comet-url-preview-content">
+              <div class="comet-url-preview-favicon">🌐</div>
+              <div class="comet-url-preview-info">
+                <div class="comet-url-preview-title">Loading...</div>
+                <div class="comet-url-preview-url"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="comet-modal-footer">
+          <button class="comet-btn comet-btn-secondary comet-modal-cancel">Cancel</button>
+          <button class="comet-btn comet-btn-primary" id="add-url-confirm" disabled>Add URL</button>
+        </div>
+      </div>
+    `;
+
+    this.showModal(addUrlDialogHTML);
+
+    // Get form elements
+    const urlInput = this.modalOverlay.querySelector('#url-input');
+    const titleInput = this.modalOverlay.querySelector('#title-input');
+    const collectionSelect = this.modalOverlay.querySelector('#collection-select');
+    const addButton = this.modalOverlay.querySelector('#add-url-confirm');
+    const preview = this.modalOverlay.querySelector('#url-preview');
+
+    // Validate form and enable/disable button
+    const validateForm = () => {
+      const url = urlInput.value.trim();
+      const collectionId = collectionSelect.value;
+      const isValid = this.isValidUrl(url) && collectionId;
+      
+      addButton.disabled = !isValid;
+      addButton.style.opacity = isValid ? '1' : '0.5';
+    };
+
+    // Auto-validate on change
+    urlInput.addEventListener('input', validateForm);
+    collectionSelect.addEventListener('change', validateForm);
+
+    // URL preview on blur
+    urlInput.addEventListener('blur', async () => {
+      const url = urlInput.value.trim();
+      if (this.isValidUrl(url)) {
+        await this.showUrlPreview(url, preview);
+      }
+    });
+
+    // Focus on URL input
+    urlInput.focus();
+    if (clipboardUrl) {
+      urlInput.select();
+      await this.showUrlPreview(clipboardUrl, preview);
+    }
+
+    // Add URL button click
+    addButton.addEventListener('click', async () => {
+      const url = urlInput.value.trim();
+      const customTitle = titleInput.value.trim();
+      const collectionId = collectionSelect.value;
+
+      if (!this.isValidUrl(url)) {
+        this.showToast('Please enter a valid URL', 'error');
+        return;
+      }
+
+      if (!collectionId) {
+        this.showToast('Please select a collection', 'error');
+        return;
+      }
+
+      try {
+        addButton.disabled = true;
+        addButton.textContent = 'Adding...';
+        
+        await this.addUrlToCollection(url, customTitle, collectionId);
+        this.hideModal();
+      } catch (error) {
+        console.error('❌ Error adding URL:', error);
+        this.showToast('Failed to add URL', 'error');
+      } finally {
+        addButton.disabled = false;
+        addButton.textContent = 'Add URL';
+      }
+    });
+
+    // Initial validation
+    validateForm();
+  }
+
+  async showUrlPreview(url, previewElement) {
+    if (!previewElement) return;
+
+    previewElement.style.display = 'block';
+    const titleElement = previewElement.querySelector('.comet-url-preview-title');
+    const urlElement = previewElement.querySelector('.comet-url-preview-url');
+    
+    titleElement.textContent = 'Loading title...';
+    urlElement.textContent = url;
+
+    try {
+      // Try to fetch page title
+      const title = await this.fetchPageTitle(url);
+      titleElement.textContent = title || new URL(url).hostname;
+    } catch (error) {
+      console.log('Failed to fetch title:', error);
+      titleElement.textContent = new URL(url).hostname;
+    }
+  }
+
+  async fetchPageTitle(url) {
+    try {
+      // We can't directly fetch due to CORS, but we can try using the background script
+      // For now, we'll extract from URL structure
+      const urlObj = new URL(url);
+      return urlObj.hostname.replace('www.', '');
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async addUrlToCollection(url, customTitle, collectionId) {
+    console.log('🔗 Adding URL to collection:', { url, customTitle, collectionId });
+    
+    const collection = this.collections.find(c => c.id === collectionId);
+    if (!collection) {
+      throw new Error('Collection not found');
+    }
+
+    // Check if URL already exists
+    const existingPage = collection.pages.find(p => p.url === url);
+    if (existingPage) {
+      this.showToast('URL already exists in this collection', 'warning');
+      return;
+    }
+
+    // Create new page entry
+    const urlObj = new URL(url);
+    const defaultTitle = customTitle || urlObj.hostname.replace('www.', '');
+    
+    const newPage = {
+      id: Date.now().toString(),
+      title: defaultTitle,
+      url: url,
+      favicon: `https://www.google.com/s2/favicons?sz=32&domain=${urlObj.hostname}`,
+      thumbnail: null, // No thumbnail for manually added URLs
+      addedAt: new Date().toISOString(),
+      isManuallyAdded: true
+    };
+
+    console.log('📝 Creating new URL page:', newPage);
+
+    if (!collection.pages) collection.pages = [];
+    collection.pages.push(newPage);
+    
+    await this.saveCollections();
+    this.renderCollections();
+    
+    this.showToast(`Added "${defaultTitle}" to "${collection.name}"`, 'success');
+    console.log('✅ URL added to collection successfully');
+  }
+
+  isValidUrl(string) {
+    try {
+      const url = new URL(string);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch (_) {
+      return false;
+    }
   }
 
   // =============================================
@@ -1731,6 +1983,75 @@ class CometCollectionsSidebar {
     // Hide any open menus/modals
     this.hideContextMenu();
     this.hideModal();
+  }
+
+  showSupportDialog() {
+    const supportDialogHTML = `
+      <div class="comet-modal-content" style="max-width: 400px;">
+        <div class="comet-modal-header">
+          <h3>☕ Support Comet Collections</h3>
+        </div>
+        <div class="comet-modal-body">
+          <div class="comet-support-content">
+            <p>Love using Comet Collections? Your support helps keep this extension free and constantly improving!</p>
+            
+            <div class="comet-support-stats">
+              <div class="comet-stat">
+                <span class="comet-stat-number">${this.collections.length}</span>
+                <span class="comet-stat-label">Collections</span>
+              </div>
+              <div class="comet-stat">
+                <span class="comet-stat-number">${this.collections.reduce((total, col) => total + col.pages.length, 0)}</span>
+                <span class="comet-stat-label">Pages</span>
+              </div>
+            </div>
+            
+            <div class="comet-support-message">
+              <p>🚀 <strong>What your support enables:</strong></p>
+              <ul>
+                <li>🎨 New themes and customizations</li>
+                <li>☁️ Cloud sync across devices</li>
+                <li>⚡ Performance improvements</li>
+                <li>🛠️ Regular bug fixes and updates</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="comet-modal-footer">
+          <button class="comet-btn comet-btn-primary comet-support-coffee-btn">
+            ☕ Buy me a coffee
+          </button>
+          <button class="comet-btn comet-support-github-btn">
+            ⭐ Star on GitHub
+          </button>
+          <button class="comet-btn comet-btn-secondary comet-modal-cancel">
+            Maybe later
+          </button>
+        </div>
+      </div>
+    `;
+
+    this.showModal(supportDialogHTML);
+
+    // Add event listeners
+    const coffeeBtn = this.modalOverlay.querySelector('.comet-support-coffee-btn');
+    const githubBtn = this.modalOverlay.querySelector('.comet-support-github-btn');
+
+    if (coffeeBtn) {
+      coffeeBtn.addEventListener('click', () => {
+        window.open('https://buymeacoffee.com/denquizon', '_blank');
+        this.hideModal();
+        this.showToast('❤️ Thank you for your support!', 'success');
+      });
+    }
+
+    if (githubBtn) {
+      githubBtn.addEventListener('click', () => {
+        window.open('https://github.com/DenQuizon/comet-collections-extension', '_blank');
+        this.hideModal();
+        this.showToast('⭐ Thanks for starring the repo!', 'success');
+      });
+    }
   }
 
   toggleSidebar() {
