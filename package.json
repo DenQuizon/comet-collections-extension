@@ -1,0 +1,45 @@
+{
+  "name": "comet-collections-extension",
+  "version": "1.0.0",
+  "description": "A powerful Microsoft Edge Collections clone for Chrome browsers",
+  "main": "manifest.json",
+  "scripts": {
+    "build": "npm run clean && npm run copy",
+    "clean": "rm -rf dist && mkdir dist",
+    "copy": "cp -r . dist/ && rm -rf dist/node_modules dist/.git dist/package*.json",
+    "package": "npm run build && cd dist && zip -r ../comet-collections-v$npm_package_version.zip . -x '*.git*' 'node_modules/*' 'package*.json'",
+    "version-patch": "npm version patch && npm run package",
+    "version-minor": "npm version minor && npm run package", 
+    "version-major": "npm version major && npm run package",
+    "test": "echo 'No tests specified yet'",
+    "lint": "echo 'Linting would go here'",
+    "dev": "echo 'Load unpacked extension in Chrome for development'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YOUR_USERNAME/comet-collections-extension.git"
+  },
+  "keywords": [
+    "chrome-extension",
+    "collections",
+    "bookmarks",
+    "productivity",
+    "browser-extension",
+    "web-organization",
+    "tabs-management"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/comet-collections-extension/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/comet-collections-extension#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "chrome >= 88"
+  ],
+  "devDependencies": {},
+  "dependencies": {}
+}

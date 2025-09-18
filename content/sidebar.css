@@ -1,0 +1,1422 @@
+/* Comet Collections Sidebar CSS */
+/* Phase 1: Core styling with theme support and smooth animations */
+
+/* Enhanced sidebar with spring physics animation */
+.comet-collections-sidebar {
+  /* Positioning and layout */
+  position: fixed;
+  top: 0;
+  right: -400px; /* Hidden by default */
+  width: 400px;
+  height: 100vh;
+  z-index: 2147483647; /* Maximum z-index to stay on top */
+  
+  /* Base styling */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  
+  /* Enhanced spring physics animation */
+  transition: right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.3s ease,
+              box-shadow 0.4s ease;
+  
+  /* Enhanced glassmorphism styling */
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(30px) saturate(180%) brightness(1.1);
+  -webkit-backdrop-filter: blur(30px) saturate(180%) brightness(1.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.3),
+              0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+/* Visible state - slides in from right */
+.comet-collections-sidebar.comet-visible {
+  right: 0;
+}
+
+/* Page content shifting when sidebar is visible */
+body.comet-sidebar-active {
+  margin-right: 400px;
+  transition: margin-right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* =========================== */
+/* CONTENT SECTION */
+/* =========================== */
+/* HEADER SECTION */
+/* =========================== */
+
+.comet-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset;
+}
+
+.comet-sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.5px;
+}
+
+.comet-title-icon {
+  font-size: 22px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.comet-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comet-search-container {
+  position: relative;
+  margin-right: 8px;
+}
+
+.comet-search-box {
+  width: 200px;
+  padding: 6px 32px 6px 12px;
+  border: 1px solid;
+  border-radius: 4px;
+  background: inherit;
+  color: inherit;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.comet-search-box:focus {
+  outline: none;
+  border-color: #0078d4;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+}
+
+.comet-search-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.5;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.comet-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 2px;
+  border-radius: 2px;
+  display: none;
+}
+
+.comet-search-clear:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-search-clear:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.comet-search-box:not(:placeholder-shown) + .comet-search-icon {
+  display: none;
+}
+
+.comet-search-box:not(:placeholder-shown) ~ .comet-search-clear {
+  display: block;
+}
+
+.comet-theme-selector {
+  padding: 4px 8px;
+  border: 1px solid;
+  border-radius: 4px;
+  background: inherit;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Theme selector for different themes */
+.comet-collections-sidebar.comet-theme-dark .comet-theme-selector {
+  border-color: #464647;
+  background: #2d2d2d;
+}
+
+.comet-collections-sidebar.comet-theme-light .comet-theme-selector {
+  border-color: #d1d1d1;
+  background: #fafafa;
+}
+
+@media (prefers-color-scheme: dark) {
+  .comet-collections-sidebar:not(.comet-theme-light) .comet-theme-selector {
+    border-color: #464647;
+    background: #2d2d2d;
+  }
+}
+
+.comet-header-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.comet-header-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.comet-header-btn-primary {
+  background: #0078d4;
+  color: white;
+  border-color: #0078d4;
+}
+
+.comet-header-btn-primary:hover {
+  background: #106ebe;
+  border-color: #106ebe;
+}
+
+/* =========================== */
+/* CONTENT SECTION */
+/* =========================== */
+
+.comet-sidebar-content {
+  height: calc(100vh - 65px); /* Subtract header height */
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+/* Enhanced custom scrollbar styling */
+.comet-sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comet-sidebar-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.comet-sidebar-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.15));
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.comet-sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.25));
+  transform: scaleX(1.5);
+}
+
+/* Firefox scrollbar */
+.comet-sidebar-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.05);
+}
+
+/* =========================== */
+/* CURRENT PAGE SECTION */
+/* =========================== */
+
+.comet-current-page-section {
+  margin-bottom: 24px;
+}
+
+.comet-section-header {
+  margin-bottom: 12px;
+}
+
+.comet-section-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.comet-current-page-card {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15),
+              0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  transition: all 0.3s ease;
+}
+
+.comet-current-page-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2),
+              0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+/* Current page card theme variations */
+.comet-collections-sidebar.comet-theme-dark .comet-current-page-card {
+  border-color: #464647;
+  background: #2d2d2d;
+}
+
+.comet-collections-sidebar.comet-theme-light .comet-current-page-card {
+  border-color: #e1e5e9;
+  background: #fafafa;
+}
+
+@media (prefers-color-scheme: dark) {
+  .comet-collections-sidebar:not(.comet-theme-light) .comet-current-page-card {
+    border-color: #464647;
+    background: #2d2d2d;
+  }
+}
+
+.comet-current-page-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.comet-current-favicon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.comet-current-favicon-fallback {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 4px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-current-favicon-fallback {
+  background: #464647;
+}
+
+.comet-current-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.comet-current-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comet-current-url {
+  font-size: 12px;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comet-current-add-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #0078d4, #106ebe);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 4px 16px rgba(0, 120, 212, 0.3),
+              0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.comet-current-add-btn:hover {
+  background: linear-gradient(135deg, #106ebe, #005a9e);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 120, 212, 0.4),
+              0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+/* =========================== */
+/* COLLECTIONS SECTION */
+/* =========================== */
+
+.comet-collections-section {
+  margin-bottom: 24px;
+}
+
+.comet-collections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Enhanced empty state with beautiful animations */
+.comet-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  opacity: 0.8;
+  animation: fadeInUp 0.6s ease;
+}
+
+.comet-empty-state::before {
+  content: '📁';
+  display: block;
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: gentleBounce 2s ease-in-out infinite;
+}
+
+.comet-empty-state div:first-child {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.comet-empty-state small {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  display: block;
+  margin-top: 8px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 0.8;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gentleBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* =========================== */
+/* COLLECTION CARDS */
+/* =========================== */
+
+.comet-collection-card {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  cursor: grab;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1),
+              0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+.comet-collection-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2),
+              0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.comet-collection-card:active {
+  cursor: grabbing;
+}
+
+.comet-collection-card.dragging {
+  opacity: 0.5;
+  transform: rotate(1deg) scale(0.98);
+  z-index: 1000;
+}
+
+.comet-collection-card.drag-over {
+  border-color: #0078d4;
+  background: rgba(0, 120, 212, 0.05);
+}
+
+.comet-collections-list.drag-active .comet-collection-card:not(.dragging) {
+  transition: transform 0.2s ease;
+}
+
+.comet-drag-handle {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  cursor: grab;
+  padding: 4px;
+  margin: -4px;
+  border-radius: 4px;
+}
+
+.comet-collection-card:hover .comet-drag-handle,
+.comet-preview-item:hover .comet-drag-handle {
+  opacity: 0.5;
+}
+
+.comet-drag-handle:hover {
+  opacity: 1 !important;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-drag-handle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.comet-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Collection card theme variations - Updated for glassmorphism */
+
+.comet-collection-card:hover {
+  border-color: #0078d4;
+}
+
+.comet-collection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.comet-collection-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.comet-expand-icon {
+  font-size: 12px;
+  color: #666;
+  transition: transform 0.2s ease;
+  width: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.comet-collection-card.expanded .comet-expand-icon {
+  transform: rotate(90deg);
+}
+
+.comet-collection-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.comet-collection-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.comet-collection-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comet-collection-count {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.comet-collection-more {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.comet-collection-more:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-collection-more:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* =========================== */
+/* COLLECTION PREVIEW (Expanded) */
+/* =========================== */
+
+.comet-collection-preview {
+  padding: 0 16px 16px 16px;
+  border-top: 1px solid;
+  border-color: inherit;
+  display: none;
+}
+
+.comet-collection-card.expanded .comet-collection-preview {
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 300px;
+  }
+}
+
+.comet-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  border-radius: 8px;
+  margin: 2px 0;
+}
+
+.comet-preview-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.comet-preview-item.dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+
+.comet-preview-item.drag-over {
+  border-top: 2px solid #0078d4;
+}
+
+.comet-page-thumbnail {
+  width: 48px;
+  height: 36px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f8f9fa;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-page-thumbnail {
+  background: #2d2d2d;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.comet-page-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comet-page-thumbnail-placeholder {
+  font-size: 16px;
+  opacity: 0.5;
+}
+
+.comet-page-thumbnail-loading {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #0078d4;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.comet-page-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.comet-page-title {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  /* Modern flexbox approach with webkit fallback */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2; /* Standard property for compatibility */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  /* Fallback for non-webkit browsers */
+  max-height: 2.4em;
+}
+
+.comet-page-url {
+  font-size: 11px;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comet-preview-favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.comet-preview-favicon-fallback {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 2px;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-preview-favicon-fallback {
+  background: #464647;
+}
+
+.comet-preview-title {
+  flex: 1;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.comet-page-remove {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: #ff4444;
+  cursor: pointer;
+  border-radius: 2px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+  position: absolute;
+  right: 0;
+}
+
+.comet-preview-item:hover .comet-page-remove {
+  opacity: 1;
+}
+
+.comet-page-remove:hover {
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.comet-preview-empty {
+  text-align: center;
+  padding: 32px 20px;
+  opacity: 0.7;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin: 8px 0;
+  animation: fadeIn 0.4s ease;
+}
+
+.comet-preview-empty::before {
+  content: '✨';
+  display: block;
+  font-size: 24px;
+  margin-bottom: 8px;
+  animation: gentlePulse 3s ease-in-out infinite;
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.comet-preview-more {
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+  opacity: 0.7;
+  border-top: 1px solid;
+  border-color: inherit;
+}
+
+/* =========================== */
+/* MODALS AND DIALOGS */
+/* =========================== */
+
+.comet-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2147483648; /* Higher than sidebar */
+  backdrop-filter: blur(4px);
+}
+
+.comet-modal {
+  background: #ffffff;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
+  padding: 0;
+  min-width: 400px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  animation: modalSlideIn 0.3s ease;
+}
+
+/* Enhanced Glass effect support for all browsers */
+.comet-glass-modal {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), 
+              0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
+  color: #ffffff !important;
+}
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(1px)) {
+  .comet-glass-modal {
+    background: rgba(0, 0, 0, 0.95) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7) !important;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes contextMenuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.comet-modal-title {
+  margin: 0;
+  padding: 24px 28px 18px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.comet-modal-content {
+  padding: 24px 28px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 15px;
+}
+
+.comet-modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 16px 24px 20px;
+  border-top: 1px solid #e1e5e9;
+}
+
+/* Add styles for dialog rows and color picker */
+.comet-dialog-row {
+  margin-bottom: 16px;
+}
+
+.comet-color-picker {
+  margin-top: 16px;
+}
+
+.comet-color-picker label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.comet-color-options {
+  display: flex;
+  gap: 8px;
+}
+
+.comet-color-option {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.comet-color-option.selected {
+  border-color: var(--comet-accent);
+  transform: scale(1.1);
+}
+
+/* Ensure modal buttons have visible text - Enhanced */
+.comet-modal-buttons button {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.comet-modal-buttons .comet-btn-primary {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0078d4, #106ebe);
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+}
+
+.comet-modal-buttons .comet-btn-secondary {
+  color: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.comet-modal-buttons .comet-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+
+.comet-modal-buttons .comet-btn-danger {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #ff4757, #ff3838);
+  border: none;
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+/* Form inputs */
+.comet-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid;
+  border-radius: 4px;
+  background: inherit;
+  color: inherit;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-input {
+  border-color: #464647;
+  background: #1e1e1e;
+}
+
+.comet-collections-sidebar.comet-theme-light .comet-input {
+  border-color: #d1d1d1;
+  background: white;
+}
+
+/* Color picker */
+.comet-color-picker {
+  margin-top: 16px;
+}
+
+.comet-color-picker label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.comet-color-options {
+  display: flex;
+  gap: 8px;
+}
+
+.comet-color-option {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.comet-color-option.selected {
+  border-color: var(--comet-accent);
+  transform: scale(1.1);
+}
+
+/* Buttons */
+.comet-btn {
+  padding: 8px 16px;
+  border: 1px solid;
+  border-radius: 4px;
+  background: inherit;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.comet-btn-primary {
+  background: #0078d4;
+  color: white;
+  border-color: #0078d4;
+}
+
+.comet-btn-primary:hover {
+  background: #106ebe;
+  border-color: #106ebe;
+}
+
+.comet-btn-secondary {
+  background: transparent;
+  border-color: #d1d1d1;
+}
+
+.comet-btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-btn-secondary {
+  border-color: #464647;
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.comet-btn-danger {
+  background: #ff4444;
+  color: white;
+  border-color: #ff4444;
+}
+
+.comet-btn-danger:hover {
+  background: #e63939;
+  border-color: #e63939;
+}
+
+/* =========================== */
+/* CONTEXT MENU */
+/* =========================== */
+
+.comet-context-menu {
+  position: absolute;
+  background: inherit;
+  border: 1px solid;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  padding: 4px 0;
+  min-width: 120px;
+  display: none;
+  z-index: 2147483649; /* Highest z-index */
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-context-menu {
+  border-color: #464647;
+  background: #2d2d2d;
+}
+
+.comet-collections-sidebar.comet-theme-light .comet-context-menu {
+  border-color: #d1d1d1;
+  background: white;
+}
+
+.comet-context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s ease;
+}
+
+.comet-context-item:hover {
+  background: rgba(0, 120, 212, 0.1);
+}
+
+.comet-context-icon {
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+}
+
+.comet-context-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 4px 0;
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-context-divider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* =========================== */
+/* RESPONSIVE DESIGN */
+/* =========================== */
+
+@media (max-width: 1200px) {
+  .comet-collections-sidebar {
+    width: 350px;
+  }
+  
+  body.comet-sidebar-active {
+    margin-right: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .comet-collections-sidebar {
+    width: 100%;
+    right: -100%;
+  }
+  
+  body.comet-sidebar-active {
+    margin-right: 0;
+    overflow: hidden;
+  }
+}
+
+/* Bulk operations toolbar */
+.comet-bulk-toolbar {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e5e9;
+  padding: 12px 20px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-bulk-toolbar {
+  background: #2d2d2d;
+  border-color: #464647;
+}
+
+.comet-bulk-toolbar.active {
+  display: flex;
+}
+
+.comet-bulk-info {
+  flex: 1;
+  font-weight: 500;
+}
+
+.comet-bulk-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.comet-bulk-btn {
+  padding: 4px 12px;
+  border: 1px solid;
+  border-radius: 4px;
+  background: inherit;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.comet-bulk-btn:hover {
+  background: rgba(0, 120, 212, 0.1);
+  border-color: #0078d4;
+}
+
+.comet-bulk-btn-primary {
+  background: #0078d4;
+  color: white;
+  border-color: #0078d4;
+}
+
+.comet-bulk-btn-primary:hover {
+  background: #106ebe;
+}
+
+/* Selection checkboxes */
+.comet-selection-checkbox {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.comet-selection-mode .comet-selection-checkbox {
+  opacity: 1;
+}
+
+.comet-collections-list.selection-mode .comet-collection-card,
+.comet-collection-preview.selection-mode .comet-preview-item {
+  padding-left: 8px;
+}
+
+/* Import/Export styling */
+.comet-import-export {
+  padding: 16px;
+  border-top: 1px solid;
+  border-color: inherit;
+  display: none;
+}
+
+.comet-import-export.active {
+  display: block;
+}
+
+.comet-file-input {
+  display: none;
+}
+
+.comet-file-label {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #0078d4;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s ease;
+}
+
+.comet-file-label:hover {
+  background: #106ebe;
+}
+
+/* Enhanced modal styling */
+.comet-modal-large {
+  max-width: 600px;
+  width: 95%;
+}
+
+.comet-modal-tabs {
+  display: flex;
+  border-bottom: 1px solid;
+  border-color: inherit;
+  margin-bottom: 20px;
+}
+
+.comet-modal-tab {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.comet-modal-tab.active {
+  border-bottom-color: #0078d4;
+  color: #0078d4;
+}
+
+.comet-modal-tab:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.comet-collections-sidebar.comet-theme-dark .comet-modal-tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.comet-modal-tab-content {
+  display: none;
+}
+
+.comet-modal-tab-content.active {
+  display: block;
+}
+
+/* Filter/Search results */
+.comet-search-results {
+  margin-bottom: 16px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.comet-no-results {
+  text-align: center;
+  padding: 40px 20px;
+  opacity: 0.6;
+}
+
+.comet-collection-card.filtered-out,
+.comet-preview-item.filtered-out {
+  display: none;
+}
+
+/* Enhanced tooltips */
+.comet-tooltip {
+  position: relative;
+}
+
+.comet-tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Focus states */
+.comet-header-btn:focus,
+.comet-current-add-btn:focus,
+.comet-collection-more:focus,
+.comet-btn:focus,
+.comet-input:focus,
+.comet-theme-selector:focus {
+  outline: 2px solid #0078d4;
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .comet-collections-sidebar,
+  body.comet-sidebar-active,
+  .comet-expand-icon,
+  .comet-header-btn,
+  .comet-collection-card,
+  .comet-preview-item,
+  .comet-page-remove,
+  .comet-color-option,
+  .comet-btn {
+    transition: none;
+  }
+  
+  .comet-collection-preview {
+    animation: none;
+  }
+  
+  .comet-modal {
+    animation: none;
+  }
+}

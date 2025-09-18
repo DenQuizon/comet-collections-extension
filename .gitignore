@@ -1,0 +1,94 @@
+# Comet Collections - Development Files
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Development and build files
+node_modules/
+dist/
+build/
+*.tgz
+*.tar.gz
+
+# Package files
+*.crx
+*.pem
+*.zip
+package/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Screenshots and test files (keep examples)
+screenshots/
+test-images/
+*.screenshot.png
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# System and hidden files
+._.DS_Store
+.AppleDouble
+.LSOverride
+.com.apple.timemachine.donotpresent
+
+# Windows specific
+desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Linux specific  
+*~
+.nfs*
