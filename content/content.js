@@ -209,15 +209,28 @@ class CometContentSidebar {
     }
   }
 
+  // Pretty fallback from URL host (e.g., www.coursera.org -> Coursera)
+  deriveTitleFallbackFromUrl(url) {
+    try {
+      const host = new URL(url).hostname.replace('www.', '');
+      const first = host.split('.')[0];
+      if (!first) return host;
+      return first.charAt(0).toUpperCase() + first.slice(1);
+    } catch {
+      return '';
+    }
+  }
+
   // Remove the word "Virtual" from titles (case-insensitive), collapse spaces
-  sanitizeTitle(title) {
+  // If result is empty, use provided fallback (if any)
+  sanitizeTitle(title, fallback = '') {
     try {
       if (!title || typeof title !== 'string') return title || '';
       let cleaned = title.replace(/\bvirtual\b/gi, '');
       cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
-      return cleaned || 'Untitled';
+      return cleaned || (fallback || '');
     } catch {
-      return title || 'Untitled';
+      return title || fallback || '';
     }
   }
 
@@ -230,7 +243,8 @@ class CometContentSidebar {
         if (!col.pages) continue;
         for (const p of col.pages) {
           if (p && typeof p.title === 'string') {
-            const newTitle = this.sanitizeTitle(p.title);
+            const fallback = this.deriveTitleFallbackFromUrl(p.url);
+            const newTitle = this.sanitizeTitle(p.title, fallback);
             if (newTitle !== p.title) {
               p.title = newTitle;
               changed = true;
@@ -861,9 +875,10 @@ class CometContentSidebar {
       }
     } catch {}
 
+    const fallbackName = this.deriveTitleFallbackFromUrl(this.currentTab.url);
     const page = {
       id: Date.now().toString(),
-      title: this.sanitizeTitle(this.currentTab.title),
+      title: this.sanitizeTitle(this.currentTab.title, fallbackName) || fallbackName,
       url: this.currentTab.url,
       favicon: faviconUrl,
       addedAt: new Date().toISOString()
@@ -938,7 +953,8 @@ class CometContentSidebar {
     addButton.addEventListener('click', async () => {
       const collectionId = collectionSelect.value;
       const titleInput = this.modalOverlay.querySelector('#page-title-input');
-      this.currentTab.title = this.sanitizeTitle(titleInput.value);
+      // Keep raw input; final sanitize with URL-based fallback happens on save
+      this.currentTab.title = (titleInput.value || '').trim();
 
       if (!collectionId) {
         this.showToast('Please select a collection', 'error');
@@ -1115,7 +1131,7 @@ class CometContentSidebar {
     // Create new page entry
     const urlObj = new URL(url);
     const baseTitle = customTitle || urlObj.hostname.replace('www.', '');
-    const defaultTitle = this.sanitizeTitle(baseTitle);
+    const defaultTitle = this.sanitizeTitle(baseTitle, this.deriveTitleFallbackFromUrl(url));
     
     const newPage = {
       id: Date.now().toString(),
