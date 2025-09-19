@@ -209,6 +209,44 @@ class CometContentSidebar {
     }
   }
 
+  // Remove the word "Virtual" from titles (case-insensitive), collapse spaces
+  sanitizeTitle(title) {
+    try {
+      if (!title || typeof title !== 'string') return title || '';
+      let cleaned = title.replace(/\bvirtual\b/gi, '');
+      cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+      return cleaned || 'Untitled';
+    } catch {
+      return title || 'Untitled';
+    }
+  }
+
+  async migrateRemoveVirtualWord() {
+    try {
+      const { migrationRemoveVirtualDone } = await chrome.storage.local.get(['migrationRemoveVirtualDone']);
+      if (migrationRemoveVirtualDone) return;
+      let changed = false;
+      for (const col of this.collections || []) {
+        if (!col.pages) continue;
+        for (const p of col.pages) {
+          if (p && typeof p.title === 'string') {
+            const newTitle = this.sanitizeTitle(p.title);
+            if (newTitle !== p.title) {
+              p.title = newTitle;
+              changed = true;
+            }
+          }
+        }
+      }
+      if (changed) {
+        await this.saveCollections();
+      }
+      await chrome.storage.local.set({ migrationRemoveVirtualDone: true });
+    } catch (e) {
+      console.warn('⚠️ Migration (remove "Virtual") skipped:', e?.message || e);
+    }
+  }
+
   async loadCollections() {
     try {
       const result = await chrome.storage.local.get(['collections']);
@@ -1210,40 +1248,3 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 console.log('✅ Comet Collections: Content script ready');
-  // Remove the word "Virtual" from titles (case-insensitive), collapse spaces
-  sanitizeTitle(title) {
-    try {
-      if (!title || typeof title !== 'string') return title || '';
-      let cleaned = title.replace(/\bvirtual\b/gi, '');
-      cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
-      return cleaned || 'Untitled';
-    } catch {
-      return title || 'Untitled';
-    }
-  }
-
-  async migrateRemoveVirtualWord() {
-    try {
-      const { migrationRemoveVirtualDone } = await chrome.storage.local.get(['migrationRemoveVirtualDone']);
-      if (migrationRemoveVirtualDone) return;
-      let changed = false;
-      for (const col of this.collections || []) {
-        if (!col.pages) continue;
-        for (const p of col.pages) {
-          if (p && typeof p.title === 'string') {
-            const newTitle = this.sanitizeTitle(p.title);
-            if (newTitle !== p.title) {
-              p.title = newTitle;
-              changed = true;
-            }
-          }
-        }
-      }
-      if (changed) {
-        await this.saveCollections();
-      }
-      await chrome.storage.local.set({ migrationRemoveVirtualDone: true });
-    } catch (e) {
-      console.warn('⚠️ Migration (remove "Virtual") skipped:', e?.message || e);
-    }
-  }
