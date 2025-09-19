@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YOUR_USERNAME/comet-collections-extension.git"
+    "url": "git+https://github.com/DenQuizon/comet-collections-extension.git"
   },
   "keywords": [
     "chrome-extension",
@@ -28,12 +28,12 @@
     "web-organization",
     "tabs-management"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Den Quizon",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/comet-collections-extension/issues"
+    "url": "https://github.com/DenQuizon/comet-collections-extension/issues"
   },
-  "homepage": "https://github.com/YOUR_USERNAME/comet-collections-extension#readme",
+  "homepage": "https://github.com/DenQuizon/comet-collections-extension#readme",
   "engines": {
     "node": ">=14.0.0"
   },

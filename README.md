@@ -1,171 +1,69 @@
-# 🚀 Comet Collections - Browser Extension
+# Comet Collections (Chrome/Chromium Extension)
 
-A powerful Microsoft Edge Collections clone for Chrome and other Chromium-based browsers. Organize, manage, and access your web pages with style.
+Organize pages into beautiful, color‑coded collections in a slick in‑page sidebar. Create, rename, delete, and open collections entirely inside the app UI.
 
-![Comet Collections](https://img.shields.io/badge/version-1.0.0-blue)
-![Chrome Extension](https://img.shields.io/badge/platform-Chrome%20Extension-green)
-![Manifest](https://img.shields.io/badge/manifest-v3-orange)
+Badges: Manifest v3 · Chrome Extension · Version 1.0.0
 
-## ✨ Features
+## Features
 
-### 🎯 Core Functionality
-- **📁 Create Collections** - Organize pages into themed collections
-- **➕ Add Current Page** - Quick save with thumbnail capture
-- **🔍 Smart Search** - Find collections and pages instantly  
-- **🎨 Color Coding** - Customize collections with beautiful colors
-- **📱 Responsive Design** - Works seamlessly across all screen sizes
+- Create collections in a modal with a color picker (wheel + swatches)
+- Add Current Page and Add URL dialogs
+- Page previews show favicon and domain (e.g., www.example.com)
+- 3‑dots menu per collection: Rename, Open all, Delete — all in‑app
+- Open all: choose Same window, New window, or Incognito
+- Themes: Auto / Light / Dark
+- Persistent storage via chrome.storage
 
-### 🔥 Advanced Features
-- **🪟 Multi-Window Support** - Open collections in new windows or incognito
-- **🎭 Theme Support** - Auto, Light, and Dark themes
-- **🖱️ Drag & Drop** - Reorder collections and pages effortlessly
-- **⚡ Real-time Sync** - Changes saved instantly to Chrome storage
-- **🖼️ Page Thumbnails** - Visual previews of your saved pages
+## Install (Developer Mode)
 
-### 🎨 Premium UI/UX
-- **✨ Glassmorphism Design** - Modern blur effects and transparency
-- **🌊 Smooth Animations** - Spring physics and micro-interactions
-- **🎪 Hover Effects** - Delightful visual feedback
-- **📜 Custom Scrollbars** - Themed and elegant scrolling experience
+1. Clone: `git clone https://github.com/DenQuizon/comet-collections-extension.git`
+2. Open `chrome://extensions/`
+3. Enable Developer mode
+4. Click Load unpacked and select this folder
 
-## 🚀 Installation
+## Usage
 
-### For Users
-1. Download the latest release from [Releases](https://github.com/YOUR_USERNAME/comet-collections-extension/releases)
-2. Extract the ZIP file
-3. Open Chrome and navigate to `chrome://extensions/`
-4. Enable "Developer mode" (top right)
-5. Click "Load unpacked" and select the extracted folder
-6. The Comet Collections icon will appear in your toolbar
+- Click the extension icon or press the shortcut to toggle the sidebar
+- “+” button: Create a collection (choose a color)
+- Current Page card: Add Current Page or Add URL
+- Expand a collection to see page previews with favicon + domain
+- 3‑dots menu on a collection:
+  - Rename: in‑app modal
+  - Open all: choose Same window / New window / Incognito
+  - Delete: in‑app confirmation
 
-### For Developers
-```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/comet-collections-extension.git
-cd comet-collections-extension
+Shortcut
+- macOS: Command+Shift+K
+- Windows/Linux: Ctrl+Shift+K
 
-# Load in Chrome for development
-# 1. Open chrome://extensions/
-# 2. Enable Developer mode
-# 3. Click "Load unpacked" and select this folder
-```
+## Permissions (Why)
 
-## 🎮 Usage
+- tabs, activeTab: read current tab title/url and open pages
+- scripting: inject content UI where needed
+- storage: save collections and pages locally
+- tabCapture: capture thumbnails (when allowed by page)
 
-### Getting Started
-1. **Click the extension icon** in your toolbar to open the sidebar
-2. **Create your first collection** using the "+" button
-3. **Add the current page** with the "Add to Collection" button
-4. **Organize and enjoy** your beautifully organized web pages!
+## Development
 
-### Keyboard Shortcuts
-- **Cmd+Shift+K** (Mac) / **Ctrl+Shift+K** (Windows/Linux) - Toggle sidebar
+Structure
+- manifest.json
+- background/background.js
+- content/content.js
+- content/sidebar.css
+- build.sh
 
-### Pro Tips
-- **Right-click collections** for advanced options (Rename, Delete, Open All)
-- **Use the search box** to quickly find specific pages
-- **Drag and drop** to reorder your collections and pages
-- **Choose different themes** from the header dropdown
+Build and Package
+- Package with script: `npm run package`
+- Or use build.sh: `./build.sh`
 
-## 🛠️ Development
+## Troubleshooting
 
-### Project Structure
-```
-comet-collections-extension/
-├── manifest.json          # Extension configuration
-├── background/
-│   └── background.js      # Service worker for browser APIs
-├── content/
-│   ├── content.js         # Main sidebar functionality
-│   └── sidebar.css        # Styles and animations
-├── icons/                 # Extension icons
-├── popup/                 # Extension popup (if needed)
-└── sidepanel/            # Alternative UI implementation
-```
+- Sidebar not toggling on some pages: Chrome blocks injection on chrome://, edge://, and extension pages
+- Incognito option: enable “Allow in incognito” for the extension
+- Open All fallback: if the background service worker doesn’t respond, Same window opens tabs directly
 
-### Key Technologies
-- **Chrome Extension Manifest V3** - Latest extension platform
-- **Vanilla JavaScript (ES6+)** - No external dependencies
-- **CSS3 with Modern Features** - Glassmorphism, animations, custom properties
-- **Chrome Storage API** - Persistent data storage
-- **Chrome Tabs API** - Page capture and management
+## Privacy
 
-### Code Architecture
-- **Object-Oriented Design** - `CometCollectionsSidebar` class
-- **Event-Driven Pattern** - Responsive to user interactions
-- **Modular CSS** - Organized by component and feature
-- **Error Handling** - Graceful fallbacks and user feedback
+All data stays in your browser’s local storage (chrome.storage.local). No external services are called, except favicon lookups by domain.
 
-## 🎨 Customization
-
-### Themes
-The extension supports three themes:
-- **Auto** - Follows system preference
-- **Light** - Clean and bright
-- **Dark** - Easy on the eyes
-
-### Color Palette
-Collections can be customized with 10 beautiful colors:
-- Red, Teal, Blue, Green, Yellow
-- Purple, Mint, Gold, Lavender, Sky
-
-## 📦 Building for Production
-
-```bash
-# Create a production build
-npm run build
-
-# Package for Chrome Web Store
-npm run package
-```
-
-## 🐛 Known Issues & Solutions
-
-### Common Issues
-- **Extension not loading**: Ensure all files are present and manifest.json is valid
-- **Thumbnails not capturing**: Check if the page allows screenshot capture
-- **Storage issues**: Verify Chrome storage permissions
-
-### Browser Compatibility
-- ✅ **Chrome 88+** - Full support
-- ✅ **Edge 88+** - Full support  
-- ✅ **Brave** - Full support
-- ⚠️ **Safari** - Not supported (different extension system)
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
-4. **Push to the branch** (`git push origin feature/amazing-feature`)
-5. **Open a Pull Request**
-
-### Development Guidelines
-- Follow the existing code style
-- Test thoroughly before submitting
-- Update documentation as needed
-- Keep commits focused and descriptive
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🎉 Acknowledgments
-
-- Inspired by Microsoft Edge Collections
-- Icons from various open source projects
-- Community feedback and suggestions
-
-## 📧 Support
-
-- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/comet-collections-extension/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/comet-collections-extension/discussions)
-- **Email**: your.email@example.com
-
----
-
-**Made with ❤️ by [Your Name]**
-
-*Star ⭐ this repo if you found it helpful!*
+Repo: https://github.com/DenQuizon/comet-collections-extension

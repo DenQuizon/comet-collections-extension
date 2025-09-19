@@ -14,18 +14,10 @@ comet-collections-extension/
 ├── 🗂️ content/
 │   ├── 📄 content.js         # Main sidebar functionality
 │   └── 📄 sidebar.css        # All styles and animations
-├── 🗂️ icons/
-│   ├── 📄 icon16.svg         # Toolbar icon (16x16)
-│   ├── 📄 icon48.svg         # Extension page icon (48x48)
-│   ├── 📄 icon128.svg        # Chrome Web Store icon (128x128)
-│   └── 📄 icon.svg           # Base icon
-├── 🗂️ popup/                 # Extension popup (optional)
-│   ├── 📄 popup.html
-│   └── 📄 popup.js
-└── 🗂️ sidepanel/             # Alternative UI implementation
-    ├── 📄 sidepanel.html
-    ├── 📄 sidepanel.js
-    └── 📄 sidepanel.css
+└── 🗂️ docs/
+    ├── 📄 DEVELOPMENT.md     # This file
+    ├── 📄 MONETIZATION.md    # Monetization strategy
+    └── 📄 STORE_ASSETS.md    # Chrome Web Store assets
 ```
 
 ## 🏗️ Architecture Overview
@@ -36,7 +28,7 @@ comet-collections-extension/
 - **Role**: Service Worker for browser-level operations
 - **Responsibilities**:
   - Handle extension icon clicks
-  - Process keyboard shortcuts (Cmd+Shift+K)
+  - Process keyboard shortcuts (Cmd+Shift+C)
   - Manage tab operations (create, capture thumbnails)
   - Handle "Open All Pages" functionality
   - Storage initialization
@@ -49,6 +41,7 @@ comet-collections-extension/
   - Manage collections and pages data
   - Theme management and animations
   - Search and filtering functionality
+  - Manual URL input feature
 
 #### 3. **Styles** (`content/sidebar.css`)
 - **Role**: All visual styling and animations
@@ -69,11 +62,8 @@ comet-collections-extension/
 ### Quick Start
 ```bash
 # Clone the repository
-git clone [your-repo-url]
+git clone https://github.com/DenQuizon/comet-collections-extension.git
 cd comet-collections-extension
-
-# Install dependencies (if any added later)
-npm install
 
 # Load extension in Chrome
 # 1. Open chrome://extensions/
@@ -91,15 +81,17 @@ npm install
 # Build for production
 ./build.sh
 
-# Or use npm scripts
-npm run package
+# Sync changes to GitHub
+git add .
+git commit -m "✨ Your change description"
+git push
 ```
 
 ## 🎨 Code Style Guidelines
 
 ### JavaScript
 - **ES6+ features**: Use modern JavaScript
-- **Class-based**: Main functionality in `CometCollectionsSidebar` class
+- **Class-based**: Main functionality in `CometContentSidebar` class
 - **Async/Await**: For all asynchronous operations
 - **Error Handling**: Try-catch blocks for all async operations
 - **Naming**: camelCase for variables, PascalCase for classes
@@ -114,7 +106,7 @@ npm run package
 ### File Organization
 ```javascript
 // Example content.js structure
-class CometCollectionsSidebar {
+class CometContentSidebar {
   constructor() { /* ... */ }
   
   // ===== INITIALIZATION =====
@@ -141,6 +133,7 @@ class CometCollectionsSidebar {
 - [ ] **Extension loads** without errors
 - [ ] **Create collection** works with all colors
 - [ ] **Add current page** captures thumbnail
+- [ ] **Add manual URL** works with clipboard detection
 - [ ] **Search functionality** filters correctly
 - [ ] **Theme switching** works properly
 - [ ] **Drag & drop** reorders items
@@ -187,13 +180,13 @@ cometDebug.renderCollections(); // Force re-render
 ### Version Management
 ```bash
 # Patch version (1.0.0 → 1.0.1)
-npm run version-patch
+npm version patch
 
-# Minor version (1.0.1 → 1.1.0)
-npm run version-minor
+# Minor version (1.0.1 → 1.1.0)  
+npm version minor
 
 # Major version (1.1.0 → 2.0.0)
-npm run version-major
+npm version major
 ```
 
 ### Building for Production
@@ -228,21 +221,27 @@ npm run version-major
 - **Avoid layout thrashing**: Minimize reflows/repaints
 - **GPU acceleration**: `will-change` property when needed
 
-## 🔮 Future Enhancements
+## 🔮 Current Features
 
-### Planned Features
+### ✨ **Implemented Features**
+- [x] **Smart Collections**: Create, rename, delete collections
+- [x] **Current Page Adding**: Add current page to collections
+- [x] **Manual URL Input**: Add URLs manually with clipboard detection
+- [x] **Drag & Drop**: Reorder collections and pages
+- [x] **Search & Filter**: Find collections and pages quickly
+- [x] **Theme Support**: Auto, Light, and Dark modes
+- [x] **Glassmorphism UI**: Beautiful modern interface
+- [x] **Support Integration**: Buy me a coffee button
+- [x] **Keyboard Shortcuts**: Cmd+Shift+C to toggle
+- [x] **Context Menus**: Right-click actions
+
+### 🔮 **Future Enhancements**
 - [ ] **Cloud sync** across devices
 - [ ] **Import/Export** collections
-- [ ] **Keyboard shortcuts** for power users
-- [ ] **Bulk operations** for multiple items
 - [ ] **Advanced search** with filters
 - [ ] **Collection sharing** via URLs
-
-### Technical Debt
-- [ ] **Add unit tests** for core functionality
-- [ ] **Implement TypeScript** for better type safety
-- [ ] **Add build optimization** for smaller bundle size
-- [ ] **Improve accessibility** (ARIA labels, keyboard nav)
+- [ ] **Bulk operations** for multiple items
+- [ ] **Browser sync** integration
 
 ## 📞 Support & Contributing
 
