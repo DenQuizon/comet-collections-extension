@@ -107,6 +107,8 @@ class CometContentSidebar {
   async initializeUI() {
     // Load collections from storage
     await this.loadCollections();
+    // One-time migration: remove the word "Virtual" from saved page titles
+    await this.migrateRemoveVirtualWord();
     
     // Apply theme
     this.applyTheme();
@@ -823,7 +825,7 @@ class CometContentSidebar {
 
     const page = {
       id: Date.now().toString(),
-      title: this.currentTab.title,
+      title: this.sanitizeTitle(this.currentTab.title),
       url: this.currentTab.url,
       favicon: faviconUrl,
       addedAt: new Date().toISOString()
@@ -898,7 +900,7 @@ class CometContentSidebar {
     addButton.addEventListener('click', async () => {
       const collectionId = collectionSelect.value;
       const titleInput = this.modalOverlay.querySelector('#page-title-input');
-      this.currentTab.title = titleInput.value;
+      this.currentTab.title = this.sanitizeTitle(titleInput.value);
 
       if (!collectionId) {
         this.showToast('Please select a collection', 'error');
@@ -1074,7 +1076,8 @@ class CometContentSidebar {
 
     // Create new page entry
     const urlObj = new URL(url);
-    const defaultTitle = customTitle || urlObj.hostname.replace('www.', '');
+    const baseTitle = customTitle || urlObj.hostname.replace('www.', '');
+    const defaultTitle = this.sanitizeTitle(baseTitle);
     
     const newPage = {
       id: Date.now().toString(),
@@ -1207,3 +1210,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 console.log('✅ Comet Collections: Content script ready');
+  // Remove the word "Virtual" from titles (case-insensitive), collapse spaces
+  sanitizeTitle(title) {
+    try {
+      if (!title || typeof title !== 'string') return title || '';
+      let cleaned = title.replace(/\bvirtual\b/gi, '');
+      cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+      return cleaned || 'Untitled';
+    } catch {
+      return title || 'Untitled';
+    }
+  }
+
+  async migrateRemoveVirtualWord() {
+    try {
+      const { migrationRemoveVirtualDone } = await chrome.storage.local.get(['migrationRemoveVirtualDone']);
+      if (migrationRemoveVirtualDone) return;
+      let changed = false;
+      for (const col of this.collections || []) {
+        if (!col.pages) continue;
+        for (const p of col.pages) {
+          if (p && typeof p.title === 'string') {
+            const newTitle = this.sanitizeTitle(p.title);
+            if (newTitle !== p.title) {
+              p.title = newTitle;
+              changed = true;
+            }
+          }
+        }
+      }
+      if (changed) {
+        await this.saveCollections();
+      }
+      await chrome.storage.local.set({ migrationRemoveVirtualDone: true });
+    } catch (e) {
+      console.warn('⚠️ Migration (remove "Virtual") skipped:', e?.message || e);
+    }
+  }
