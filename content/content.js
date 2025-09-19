@@ -109,6 +109,8 @@ class CometContentSidebar {
     await this.loadCollections();
     // One-time migration: remove the word "Virtual" from saved page titles
     await this.migrateRemoveVirtualWord();
+    // One-time migration: ensure titles are never empty or literal 'Untitled'
+    await this.migrateEnsureTitlesV1();
     
     // Apply theme
     this.applyTheme();
@@ -261,6 +263,33 @@ class CometContentSidebar {
     }
   }
 
+  async migrateEnsureTitlesV1() {
+    try {
+      const { migrationEnsureTitlesV1Done } = await chrome.storage.local.get(['migrationEnsureTitlesV1Done']);
+      if (migrationEnsureTitlesV1Done) return;
+      let changed = false;
+      for (const col of this.collections || []) {
+        if (!col.pages) continue;
+        for (const p of col.pages) {
+          const fallback = this.deriveTitleFallbackFromUrl(p?.url || '');
+          const raw = (p?.title || '').trim();
+          let newTitle = this.sanitizeTitle(raw, fallback);
+          if (!newTitle || newTitle.toLowerCase() === 'untitled') {
+            newTitle = fallback || 'Untitled';
+          }
+          if (newTitle !== p.title) {
+            p.title = newTitle;
+            changed = true;
+          }
+        }
+      }
+      if (changed) await this.saveCollections();
+      await chrome.storage.local.set({ migrationEnsureTitlesV1Done: true });
+    } catch (e) {
+      console.warn('⚠️ Migration (ensure titles v1) skipped:', e?.message || e);
+    }
+  }
+
   async loadCollections() {
     try {
       const result = await chrome.storage.local.get(['collections']);
@@ -324,13 +353,18 @@ class CometContentSidebar {
               ${previewPages.length > 0 ? previewPages.map(page => {
                 const domain = (() => { try { return new URL(page.url).hostname; } catch { return ''; } })();
                 const favicon = page.favicon || (domain ? `https://www.google.com/s2/favicons?sz=32&domain=${domain}` : '');
-                const title = page.title || domain || 'Untitled';
+                const displayTitle = (() => {
+                  const raw = (page.title || '').trim();
+                  if (raw && raw.toLowerCase() !== 'untitled') return raw;
+                  const fb = this.deriveTitleFallbackFromUrl(page.url);
+                  return fb || domain || 'Untitled';
+                })();
                 return `
                 <div class="comet-preview-item" data-url="${page.url}">
                   <img class="comet-preview-favicon" src="${favicon}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                   <div class="comet-preview-favicon-fallback" style="display:none;">🌐</div>
                   <div style=\"flex:1;min-width:0;\">
-                    <div class=\"comet-preview-title\">${title}</div>
+                    <div class=\"comet-preview-title\">${displayTitle}</div>
                     <div class=\"comet-page-url\">${domain}</div>
                   </div>
                   <button class="comet-page-remove" data-page-id="${page.id}" data-collection-id="${collection.id}" title="Remove page">×</button>
