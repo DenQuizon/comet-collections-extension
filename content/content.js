@@ -140,7 +140,7 @@ class CometContentSidebar {
     const addUrlBtn = this.sidebar.querySelector('.comet-add-url-btn');
 
     if (addCollectionBtn) {
-      addCollectionBtn.addEventListener('click', () => this.showAddCollectionDialog());
+      addCollectionBtn.addEventListener('click', () => this.handleAddCollectionClick());
     }
 
     if (refreshBtn) {
@@ -292,19 +292,35 @@ class CometContentSidebar {
 
   async loadCollections() {
     try {
+      // Check if extension context is still valid
+      if (!chrome.runtime?.id) {
+        console.warn('⚠️ Extension context invalidated, using cached collections');
+        this.collections = this.collections || [];
+        return;
+      }
       const result = await chrome.storage.local.get(['collections']);
       this.collections = result.collections || [];
     } catch (error) {
       console.error('❌ Error loading collections:', error);
-      this.collections = [];
+      // If context is invalidated, keep existing collections
+      this.collections = this.collections || [];
     }
   }
 
   async saveCollections() {
     try {
+      // Check if extension context is still valid
+      if (!chrome.runtime?.id) {
+        console.warn('⚠️ Extension context invalidated, cannot save collections');
+        return;
+      }
       await chrome.storage.local.set({ collections: this.collections });
     } catch (error) {
       console.error('❌ Error saving collections:', error);
+      if (error.message.includes('Extension context invalidated')) {
+        console.warn('⚠️ Extension was reloaded. Please refresh the page.');
+        this.showToast('Extension was updated. Please refresh the page.', 'warning');
+      }
     }
   }
 
@@ -575,17 +591,27 @@ class CometContentSidebar {
       return;
     }
     this.showToast(`Opening ${urls.length} pages (${mode.replace('-', ' ')})`, 'info');
+    
+    // Check if extension context is still valid
+    if (!chrome.runtime?.id) {
+      console.warn('⚠️ Extension context invalidated, using fallback');
+      this.fallbackOpenPages(urls, mode);
+      return;
+    }
+    
     const res = await new Promise((resolve) => {
       try {
         chrome.runtime.sendMessage({ action: 'open-all-pages', urls, mode }, (response) => {
           const err = chrome.runtime.lastError;
           if (err) {
+            console.error('Runtime message error:', err);
             resolve({ success: false, error: err.message });
             return;
           }
           resolve(response || { success: false, error: 'No response' });
         });
       } catch (err) {
+        console.error('Message sending error:', err);
         resolve({ success: false, error: err.message });
       }
     });
@@ -595,19 +621,39 @@ class CometContentSidebar {
       return;
     }
 
-    // Graceful fallbacks without noisy console errors
+        // Graceful fallbacks without noisy console errors
     const errMsg = res?.error || 'Unknown error';
+    console.log('Background script failed, using fallback:', errMsg);
+    this.fallbackOpenPages(urls, mode);
+  }
+
+  fallbackOpenPages(urls, mode) {
+    console.log('🔄 Using fallback method to open pages');
     if (mode === 'current') {
       urls.forEach(url => window.open(url, '_blank'));
       this.showToast('Opened in current window', 'success');
       return;
     }
-    if (mode === 'incognito') {
-      this.showToast('Enable incognito access for the extension to open in Incognito.', 'warning');
+    if (mode === 'new-window') {
+      // Open first URL in new window, others will follow in same window
+      const newWindow = window.open(urls[0], '_blank');
+      if (newWindow) {
+        setTimeout(() => {
+          for (let i = 1; i < urls.length; i++) {
+            newWindow.open(urls[i], '_blank');
+          }
+        }, 100);
+        this.showToast('Opened in new window (fallback)', 'success');
+      } else {
+        this.showToast('Popup blocked. Allow popups and try again.', 'warning');
+      }
       return;
     }
-    // new-window failure
-    this.showToast(`Couldn’t open in a new window (${errMsg}). Try Same window.`, 'warning');
+    if (mode === 'incognito') {
+      this.showToast('Incognito mode requires extension permissions. Using current window.', 'warning');
+      urls.forEach(url => window.open(url, '_blank'));
+      return;
+    }
   }
 
   async createNewCollection() {
@@ -633,7 +679,90 @@ class CometContentSidebar {
     this.showToast(`Collection "${name}" created`, 'success');
   }
 
-  showAddCollectionDialog() {
+  async handleAddCollectionClick() {
+    try {
+      // Allow first collection for free users (0 collections = can create 1)
+      if (this.collections.length === 0) {
+        console.log('🆓 Creating first free collection');
+        this._showAddCollectionDialog();
+        return;
+      }
+
+      // Check if extension context is still valid
+      if (!chrome.runtime?.id) {
+        console.warn('⚠️ Extension context invalidated');
+        this.showToast('Extension was updated. Please refresh the page to continue.', 'warning');
+        return;
+      }
+
+      // For 2nd collection and beyond, check premium status
+      const response = await chrome.runtime.sendMessage({ action: "checkPremiumStatus" });
+      if (response && response.isPremium) {
+        console.log('✨ Premium user - allowing unlimited collections');
+        this._showAddCollectionDialog();
+      } else {
+        console.log('⚠️ Free user reached limit - showing upgrade dialog');
+        this.showUpgradeDialog();
+      }
+    } catch (error) {
+      console.error('Error checking premium status:', error);
+      if (error.message?.includes('Extension context invalidated')) {
+        this.showToast('Extension was updated. Please refresh the page.', 'warning');
+        return;
+      }
+      // Fallback: allow creation if this is the first collection
+      if (this.collections.length === 0) {
+        console.log('🆓 Fallback: Creating first free collection');
+        this._showAddCollectionDialog();
+      } else {
+        this.showToast('Unable to verify premium status. Please try again.', 'warning');
+      }
+    }
+  }
+
+  showUpgradeDialog() {
+    const upgradeDialogHTML = `
+      <div class="comet-modal-content" style="max-width: 480px;">
+        <div class="comet-modal-header">
+          <h3>🌟 Upgrade to Premium</h3>
+        </div>
+        <div class="comet-modal-body">
+          <p>The free version of Comet Collections allows you to create one collection.</p>
+          <p>Upgrade to premium to create unlimited collections and support the development of this extension!</p>
+          <p style="font-size: 1.5em; text-align: center; margin: 20px 0;">One-time payment of just £5</p>
+        </div>
+        <div class="comet-modal-footer">
+          <button class="comet-btn comet-btn-secondary comet-modal-cancel">Cancel</button>
+          <button class="comet-btn comet-btn-primary" id="upgrade-confirm">Upgrade Now</button>
+        </div>
+      </div>
+    `;
+
+    this.showModal(upgradeDialogHTML);
+
+    const upgradeBtn = this.modalOverlay.querySelector('#upgrade-confirm');
+    upgradeBtn.addEventListener('click', async () => {
+      upgradeBtn.disabled = true;
+      upgradeBtn.textContent = 'Redirecting to payment...';
+      try {
+        const response = await chrome.runtime.sendMessage({ action: "initiatePurchase" });
+        if (response.success) {
+          this.showToast('Purchase successful! You can now create unlimited collections.', 'success');
+          this.hideModal();
+        } else {
+          this.showToast('Purchase failed or was cancelled.', 'error');
+          upgradeBtn.disabled = false;
+          upgradeBtn.textContent = 'Upgrade Now';
+        }
+      } catch (error) {
+        this.showToast('An error occurred during the purchase process.', 'error');
+        upgradeBtn.disabled = false;
+        upgradeBtn.textContent = 'Upgrade Now';
+      }
+    });
+  }
+
+  _showAddCollectionDialog() {
     const defaultColor = this.collectionColors[Math.floor(Math.random() * this.collectionColors.length)];
     const addCollectionDialogHTML = `
       <div class="comet-modal-content" style="max-width: 460px;">

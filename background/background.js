@@ -66,88 +66,201 @@ async function toggleSidebar() {
   }
 }
 
-// Handle messages from content scripts
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-  console.log('📨 Message received:', request);
-  
-  if (request.action === 'toggle') {
-    // Messages from content scripts should use content script approach
-    await toggleSidebar();
-    sendResponse({ success: true });
-    return true;
+const CWS_LICENSE_API_URL = "https://www.googleapis.com/chromewebstore/v1.1/userlicenses/";
+
+async function isUserPremium() {
+  // In development, we can simulate different user types.
+  // Set this to false to test free user limitations
+  const isDevelopment = !('update_url' in chrome.runtime.getManifest());
+  if (isDevelopment) {
+    // Change this to false to test free user limits during development
+    const simulatePremium = false; // Set to true to test premium features
+    console.log(`DEV MODE: Simulating ${simulatePremium ? 'premium' : 'free'} user.`);
+    return simulatePremium;
   }
-  
-  if (request.action === 'openTab' && request.url) {
-    try {
-      await chrome.tabs.create({ url: request.url, active: false });
-      sendResponse({ success: true });
-    } catch (error) {
-      console.error('❌ Error opening tab:', error);
-      sendResponse({ success: false, error: error.message });
-    }
-    return true;
+
+  const cachedLicense = await chrome.storage.local.get("license");
+  if (cachedLicense.license && cachedLicense.license.timestamp > Date.now()) {
+    console.log("Using cached license:", cachedLicense.license.isPremium);
+    return cachedLicense.license.isPremium;
   }
-  
-  if (request.action === 'openAllPages') {
-    try {
-      const { urls, mode } = request;
-      
-      if (mode === 'window') {
-        // Open all URLs in a new window
-        const window = await chrome.windows.create({
-          url: urls[0],
-          focused: true
-        });
-        
-        // Add remaining URLs as tabs in the new window
-        for (let i = 1; i < urls.length; i++) {
-          await chrome.tabs.create({
-            windowId: window.id,
-            url: urls[i],
-            active: false
-          });
+
+  try {
+    const token = await new Promise((resolve, reject) => {
+      chrome.identity.getAuthToken({ interactive: true }, (token) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(token);
         }
-      } else if (mode === 'incognito') {
-        // Open all URLs in an incognito window
-        const window = await chrome.windows.create({
-          url: urls[0],
-          incognito: true,
-          focused: true
-        });
-        
-        // Add remaining URLs as tabs in the incognito window
-        for (let i = 1; i < urls.length; i++) {
-          await chrome.tabs.create({
-            windowId: window.id,
-            url: urls[i],
-            active: false
-          });
-        }
-      } else {
-        // Default: open all URLs as new tabs
-        for (const url of urls) {
-          await chrome.tabs.create({ url });
-        }
+      });
+    });
+
+    const response = await fetch(CWS_LICENSE_API_URL + chrome.runtime.id, {
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
       }
-      
-      sendResponse({ success: true });
-    } catch (error) {
-      console.error('❌ Error opening pages:', error);
-      sendResponse({ success: false, error: error.message });
-    }
-    return true;
-  }
-  
-  if (request.action === 'getCurrentTab') {
+    });
+
+    const data = await response.json();
+    const isPremium = data.accessLevel === "FULL";
+
+    // Cache the license for 1 hour.
+    const license = {
+      isPremium: isPremium,
+      timestamp: Date.now() + 3600000
+    };
+    await chrome.storage.local.set({ 
+      license: license,
+      lastKnownLicense: isPremium // Backup cache for fallback
+    });
+
+    console.log("License check successful. Premium status:", isPremium);
+    return isPremium;
+
+  } catch (error) {
+    console.error("Error checking license:", error);
+    // If we can't verify license, check if we have a cached license
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      sendResponse({ success: true, tab });
-    } catch (error) {
-      console.error('❌ Error getting current tab:', error);
-      sendResponse({ success: false, error: error.message });
+      const cachedResult = await chrome.storage.local.get("lastKnownLicense");
+      if (cachedResult.lastKnownLicense) {
+        console.log("Using fallback cached license:", cachedResult.lastKnownLicense);
+        return cachedResult.lastKnownLicense;
+      }
+    } catch (cacheError) {
+      console.error("Error accessing cached license:", cacheError);
     }
-    return true;
+    // In case of error and no cache, we assume the user is not premium.
+    return false;
   }
+}
+
+// Handle messages from content scripts
+// Use a non-async listener and return true synchronously to keep the port open.
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('📨 Message received:', request);
+
+  (async () => {
+    try {
+      if (request.action === "checkPremiumStatus") {
+        const isPremium = await isUserPremium();
+        sendResponse({ isPremium });
+        return;
+      }
+
+      if (request.action === "initiatePurchase") {
+        try {
+          chrome.webstore.install(
+            () => {
+              // After successful purchase, clear the license cache to force a re-check.
+              chrome.storage.local.remove("license", () => {
+                sendResponse({ success: true });
+              });
+            },
+            (error) => {
+              console.error("Error initiating purchase:", error);
+              sendResponse({ success: false, error });
+            }
+          );
+        } catch (error) {
+          console.error("Error initiating purchase:", error?.message || error);
+          sendResponse({ success: false, error: error?.message || String(error) });
+        }
+        return;
+      }
+
+      if (request.action === 'toggle') {
+        // Messages from content scripts should use content script approach
+        await toggleSidebar();
+        sendResponse({ success: true });
+        return;
+      }
+
+      if (request.action === 'openTab' && request.url) {
+        try {
+          await chrome.tabs.create({ url: request.url, active: false });
+          sendResponse({ success: true });
+        } catch (error) {
+          console.error('❌ Error opening tab:', error);
+          sendResponse({ success: false, error: error?.message || String(error) });
+        }
+        return;
+      }
+
+      if (request.action === 'open-all-pages') {
+        try {
+          const { urls, mode } = request;
+
+          if (mode === 'new-window') {
+            // Open all URLs in a new window
+            const newWindow = await chrome.windows.create({
+              url: urls[0],
+              focused: true,
+              type: 'normal'
+            });
+
+            // Add remaining URLs as tabs in the new window
+            for (let i = 1; i < urls.length; i++) {
+              await chrome.tabs.create({
+                windowId: newWindow.id,
+                url: urls[i],
+                active: false
+              });
+            }
+          } else if (mode === 'incognito') {
+            // Open all URLs in an incognito window
+            const incogWindow = await chrome.windows.create({
+              url: urls[0],
+              incognito: true,
+              focused: true,
+              type: 'normal'
+            });
+
+            // Add remaining URLs as tabs in the incognito window
+            for (let i = 1; i < urls.length; i++) {
+              await chrome.tabs.create({
+                windowId: incogWindow.id,
+                url: urls[i],
+                active: false
+              });
+            }
+          } else {
+            // Default: open all URLs as new tabs in current window
+            for (const url of urls) {
+              await chrome.tabs.create({ url });
+            }
+          }
+
+          sendResponse({ success: true });
+        } catch (error) {
+          console.error('❌ Error opening pages:', error);
+          sendResponse({ success: false, error: error?.message || String(error) });
+        }
+        return;
+      }
+
+      if (request.action === 'getCurrentTab') {
+        try {
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          sendResponse({ success: true, tab });
+        } catch (error) {
+          console.error('❌ Error getting current tab:', error);
+          sendResponse({ success: false, error: error?.message || String(error) });
+        }
+        return;
+      }
+
+      // Unknown action
+      sendResponse({ success: false, error: 'Unknown action' });
+    } catch (err) {
+      console.error('❌ Unhandled error in message handler:', err);
+      sendResponse({ success: false, error: err?.message || String(err) });
+    }
+  })();
+
+  // Keep the message channel open for async response
+  return true;
 });
 
 // Initialize extension
